@@ -1,0 +1,113 @@
+{% extends "layouts/base.twig" %}
+{% block styles %}
+<link rel="stylesheet" href="{{ route('/css/news.css' ) }}">
+{% endblock %}
+{% block content %}
+    <div class="content">
+        <div id="msg" style="{{ sessionKeyExists('storeMsg') ? '' : 'display: none;' }}">
+            {{ sessionKeyExists('storeMsg') ? flush('storeMsg') : '' }}
+        </div>
+        <h4 id="allNews" class="header">All News</h4>
+        <div id="newsData">
+        </div>
+        <div id="header-div">
+            <h4 id="header" class="header">Create News</h4>
+            <img id="cancelEdit" class="icon" src="{{ route('/images/close.svg' ) }}">
+        </div>
+        <form id="newsForm" action="{{ route('/news/store' ) }}" method="POST">
+            <input type="text" class="input-text" name="title" id="title" placeholder="Title">
+            <textarea id="description" name="description" rows="4" cols="150" placeholder="Description"></textarea>
+            <input id="createBtn" type="button" value="Create">
+            <button id="logout" type="button">Logout</Button>
+        </form>
+    </div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(document).ready(function () {
+    fetchNews();
+    {% if sessionKeyExists('storeMsg') %}
+        $('#allNews').show();
+    {% endif %}
+
+    $('body').on('click', '#createBtn', function() {
+        if ($(this).val() == 'Create') {
+            $('#newsForm').submit();
+        } else if ($(this).val() == 'Save') {
+            let newsId = $(this).data('id');
+            let title = $('#title').val();
+            let description = $('#description').val();
+            createNewsSetup();
+
+            $.post("{{ route('/news/edit' ) }}", {id: newsId, title: title, description: description}, function(data) {
+                $('#msg').text('News was successfull changed!');
+                $('#msg').show();
+                fetchNews();
+            });
+        }
+    });
+
+    $('body').on('click', '#logout', function() {
+        $.post("{{ route('/logout' ) }}", function(data) {
+            window.location.href = "{{ route('/' ) }}";
+        });
+    });
+
+    $('body').on('click', '.delete-news', function() {
+        let newsId = $(this).data('id');
+        $.post("{{ route('/news/delete' )}}", {id: newsId}, function(data) {
+            $('#msg').text('News was deleted!');
+            $('#msg').show();
+            fetchNews();
+        });
+    });
+
+    $('body').on('click', '#cancelEdit', function() {
+        let newsId = $(this).data('id');
+        createNewsSetup();
+    });
+
+    $('body').on('click', '.edit-news', function() {
+        let $this = $(this);
+        let newsId = $(this).data('id');
+        $('#cancelEdit').show();
+        $('#header').text('Edit News');
+        $('#createBtn').val('Save');
+        $('#createBtn').data('id', newsId);
+        $('#title').val($this.closest('.news-items').find('.title').text());
+        $('#description').val($this.closest('.news-items').find('.description').text());
+    });
+
+    function createNewsSetup() {
+        $('#cancelEdit').hide();
+        $('#header').text('Create News');
+        $('#createBtn').val('Create');
+        $('#title').val('');
+        $('#description').val('');
+    }
+});
+
+function fetchNews() {
+    $.get("{{ route('/news/list' ) }}", function(data) {
+        let html = '<ul>';
+        $.each(data, function (index, news) {
+            html += `<li id="news_${news.id}" class="news-items">
+                <p class="title">${news.title}</p>
+                <p class="description">${news.description}</p>
+                <div class="buttons">
+                    <img class="icon edit-news" data-id="${news.id}" src="{{ route('/images/pencil.svg' ) }}">
+                    <img class="icon delete-news" data-id="${news.id}" src="{{ route('/images/close.svg' ) }}">
+                </div>
+            </li>`;
+        });
+        if (data.length) {
+            $('#allNews').show();
+        } else {
+            $('#allNews').hide();
+        }
+        html += '</ul>';
+        $('#newsData').html(html);
+    });
+}
+</script>
+{% endblock %}

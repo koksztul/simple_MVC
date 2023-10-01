@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% block styles %}
+        {% endblock %}
+        <link rel="stylesheet" href="{{ route('/css/base.css' ) }}">
+        <script src="{{ route('/js/jquery-3.7.1.min.js') }}"></script>
+    </head>
+    <body>
+        <div id="logo">
+            <img src="{{ route('/images/logo.svg' ) }}">
+        </div>
+        {% block content %}
+        {% endblock %}
+        {% block scripts %}
+        {% endblock %}
+    </body>
+</html>

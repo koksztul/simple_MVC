@@ -1,0 +1,18 @@
+{% extends "layouts/base.twig" %}
+{% block styles %}
+<link rel="stylesheet" href="{{ route('/css/login.css' ) }}">
+{% endblock %}
+{% block content %}
+    <form action="{{ route('/login/auth' ) }}" method="POST">
+        {% if sessionKeyExists('error') %}
+            <div id="error">{{ flush('error') }}</div>
+        {% endif %}
+        <div>
+            <input type="text" class="input-text" name="username" id="username" placeholder="Username">
+        </div>
+        <div>
+            <input type="text" class="input-text" name="password" placeholder="Password">
+        </div>
+        <input type="submit" value="Login">
+    </form>
+{% endblock %}
